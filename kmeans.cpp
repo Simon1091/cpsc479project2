@@ -79,7 +79,6 @@ int main(int argc, char **argv) {
 		for (int i = 0; i < cluster_num * dimension_num; i++) {
 			centroids[i] = all_sites[i];
 		}
-		// TODO: Print centroids? If we want to
 		print_centroids(centroids, cluster_num, dimension_num);
 		all_site_count = new int[cluster_num];
 		all_sums = new double[cluster_num * dimension_num];
@@ -151,6 +150,7 @@ int main(int argc, char **argv) {
 	 // Root can print out all sites and labels.
   	if (rank == 0) {
      	double * site = all_sites;
+      print_centroids(centroids, cluster_num, dimension_num);
       for (int i = 0; i < size * elements_per; i++, site += dimension_num) {
           cout << "site: ";
           for (int j = 0; j < dimension_num; j++) cout << site[j] << ", ";
