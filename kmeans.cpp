@@ -116,10 +116,13 @@ int main(int argc, char **argv) {
 		// Compute the new centroids by dividing sums
 		// Compute how much the centroids have moved
 		if (rank == 0) {
+			cout << endl;
 			for (int i = 0; i < cluster_num; i++) {
 				for (int j = 0; j < dimension_num; j++) {
 					all_sums[dimension_num * i + j] /= all_site_count[i];
+					cout << all_sums[dimension_num * i + j] << " ";
 				}
+				cout << endl;
 			}
 
 			// Calculate how much the centroids have changed
@@ -132,6 +135,7 @@ int main(int argc, char **argv) {
 			// Copy all coordinates from all_sums to centroids
 			for (int i = 0; i < cluster_num * dimension_num; i++) {
 				centroids[i] = all_sums[i];
+        cout << centroids[i] << endl;
 			}
 		}
 		// Broadcast the new locations of centroids
@@ -147,19 +151,29 @@ int main(int argc, char **argv) {
 
 	// Gather all labels into the master process - p0
 	MPI_Gather(cluster_assignment, elements_per, MPI_INT, all_assignments, elements_per, MPI_INT, 0, MPI_COMM_WORLD);
-	 // Root can print out all sites and labels.
-  	if (rank == 0) {
-     	double * site = all_sites;
-      print_centroids(centroids, cluster_num, dimension_num);
-      for (int i = 0; i < size * elements_per; i++, site += dimension_num) {
-          cout << "site: ";
-          for (int j = 0; j < dimension_num; j++) cout << site[j] << ", ";
-          cout <<"\n\tlabel: " << all_assignments[i] << "\n";
-      }
+	// Root can print out all sites and labels.
+  if (rank == 0) {
+  	double * site = all_sites;
+    print_centroids(centroids, cluster_num, dimension_num);
+    for (int i = 0; i < size * elements_per; i++, site += dimension_num) {
+    	cout << "site: ";
+    	for (int j = 0; j < dimension_num; j++) cout << site[j] << ", ";
+    	cout <<"\n\tlabel: " << all_assignments[i] << "\n";
     }
+  }
+	free(sites);
+	free(sums);
+	free(cluster_assignment);
+	free(site_count);
+	free(centroids);
+	if (rank == 0) {
+		free(all_sites);
+		free(all_sums);
+		free(all_assignments);
+		free(all_site_count);
+	}
 	MPI_Finalize();
 	return 0;
-
 }
 
 double euclidean_distance(double * site1, double * site2, int dimension) {
